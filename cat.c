@@ -2,6 +2,7 @@
 
 bool show_ends = false;
 bool number_nonblank = false;
+bool number_lines = false;
 
 void cat_file(FILE *file, const char *filename) {
 	if (file == NULL) {
@@ -16,8 +17,12 @@ void cat_file(FILE *file, const char *filename) {
 		if (ch != '\n') {
 			is_nonblank = true;
 		}
-		if (column == 1 && number_nonblank && is_nonblank) {
-			printf("%6d\t", line);
+		if (column == 1) {
+			if (number_nonblank && is_nonblank) {
+				printf("%6d\t", line);
+			} else if (number_lines && !number_nonblank) {
+				printf("%6d\t", line);
+			}
 		}
 		if (ch == '\n' && show_ends) {
 			printf("$");
@@ -48,6 +53,9 @@ void parse_flag(const char *arg) {
 		}
 		if (arg[i] == 'b') {
 			number_nonblank = true;
+		}
+		if (arg[i] == 'n') {
+			number_lines = true;
 		}
 	}
 }
