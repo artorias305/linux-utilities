@@ -3,6 +3,8 @@
 bool show_ends = false;
 bool number_nonblank = false;
 bool number_lines = false;
+bool show_tabs = false;		   // implement
+bool show_nonprinting = false; // implement
 
 void cat_file(FILE *file, const char *filename) {
 	if (file == NULL) {
@@ -27,7 +29,11 @@ void cat_file(FILE *file, const char *filename) {
 		if (ch == '\n' && show_ends) {
 			printf("$");
 		}
-		printf("%c", ch);
+		if (ch == '\t' && show_tabs) {
+			printf("^I");
+		} else {
+			printf("%c", ch);
+		}
 		if (ch == '\n') {
 			column = 1;
 			line++;
@@ -56,6 +62,9 @@ void parse_flag(const char *arg) {
 		}
 		if (arg[i] == 'n') {
 			number_lines = true;
+		}
+		if (arg[i] == 'T') {
+			show_tabs = true;
 		}
 	}
 }
