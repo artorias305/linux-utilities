@@ -3,8 +3,7 @@
 bool show_ends = false;
 bool number_nonblank = false;
 bool number_lines = false;
-bool show_tabs = false;		   // implement
-bool show_nonprinting = false; // implement
+bool show_tabs = false;
 
 void cat_file(FILE *file, const char *filename) {
 	if (file == NULL) {
@@ -42,7 +41,9 @@ void cat_file(FILE *file, const char *filename) {
 			column++;
 		}
 	}
-	fclose(file);
+	if (file != stdin) {
+		fclose(file);
+	}
 }
 
 bool is_flag(const char *argv) {
@@ -70,20 +71,44 @@ void parse_flag(const char *arg) {
 }
 
 int main(int argc, char *argv[]) {
+	bool end_of_options = false;
+	int error_count = 0;
 	if (argc == 1) {
-		printf("Usage: cat [-E] [FILE]...\n");
-		exit(EXIT_SUCCESS);
+		cat_file(stdin, "stdin");
+		return 0;
 	}
-	for (int i = 0; i < argc; i++) {
+	for (int i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "--") == 0) {
+			end_of_options = true;
+			continue;
+		}
 		if (is_flag(argv[i])) {
 			parse_flag(argv[i]);
 		}
 	}
+	bool has_files = false;
 	for (int i = 1; i < argc; i++) {
-		if (!is_flag(argv[i])) {
-			FILE *file = fopen(argv[i], "r");
-			cat_file(file, argv[i]);
+		if (strcmp(argv[i], "--") == 0) {
+			continue;
+		}
+		if (!is_flag(argv[i]) || end_of_options) {
+			has_files = true;
+			if (strcmp(argv[i], "-") == 0) {
+				cat_file(stdin, "stdin");
+			} else {
+
+				FILE *file = fopen(argv[i], "r");
+				if (file == NULL) {
+					error_count++;
+				}
+				cat_file(file, argv[i]);
+			}
 		}
 	}
-	return 0;
+
+	if (!has_files) {
+		cat_file(stdin, "stdin");
+	}
+
+	return error_count > 0 ? 1 : 0;
 }
