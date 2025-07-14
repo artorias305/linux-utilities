@@ -1,13 +1,4 @@
-#include <fcntl.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <termios.h>
-#include <unistd.h>
-
-#define MAX_LINE 1024
-#define MAX_LINES 10000
+#include "less.h"
 
 char getch(void) {
 	struct termios oldt, newt;
