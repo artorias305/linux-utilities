@@ -20,3 +20,9 @@ Then compile and run whichever utility you want to use
 gcc -g <file.c> -o file # Compile
 ./file # Run the file
 ```
+
+## Satisfied With
+
+- [x] cat
+- [ ] grep
+- [x] less (no actual UI, just scrolling feature);
