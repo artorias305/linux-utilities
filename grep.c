@@ -1,44 +1,39 @@
 #include "grep.h"
-
-bool includes(const char *line, const char *pattern) {
-	return strstr(line, pattern) != NULL;
-}
-
-void print_file(FILE *file, const char *pattern) {
-	char ch;
-	char line[MAX_LINE];
-	while (fgets(line, sizeof(line), file)) {
-		if (includes(line, pattern)) {
-			char *start = line;
-			char *pos = strstr(start, pattern);
-
-			while (pos != NULL) {
-				*pos = '\0';
-				printf("%s", start);
-
-				printf("\033[31m%s\033[0m", pattern);
-
-				start = pos + strlen(pattern);
-				pos = strstr(start, pattern);
-			}
-
-			printf("%s", start);
-		}
-	}
-}
+#include <regex.h>
 
 int main(int argc, char *argv[]) {
 	if (argc < 3) {
-		fprintf(stderr, "Usage: grep 'string_pattern' path/to/file");
+		fprintf(stderr, "Usage: %s <pattern> <filename>\n", argv[0]);
 		return 1;
 	}
-	FILE *file = fopen(argv[2], "r");
-	if (file == NULL) {
-		fprintf(stderr, "Error opening file '%s'.", argv[1]);
+
+	const char *pattern = argv[1];
+	const char *filename = argv[2];
+
+	regex_t regex;
+	int value = regcomp(&regex, pattern, REG_EXTENDED);
+	if (value != 0) {
+		char error_msg[256];
+		regerror(value, &regex, error_msg, sizeof(error_msg));
+		fprintf(stderr, "Regex compilation failed: %s\n", error_msg);
 		return 1;
 	}
-	char *pattern = argv[1];
-	print_file(file, pattern);
+
+	FILE *file = fopen(filename, "r");
+	if (!file) {
+		fprintf(stderr, "Failed to open file: '%s'\n", filename);
+		regfree(&regex);
+		return 1;
+	}
+
+	char line[1024];
+	while (fgets(line, sizeof(line), file)) {
+		if (regexec(&regex, line, 0, NULL, 0) == 0) {
+			printf("%s", line);
+		}
+	}
+
 	fclose(file);
+	regfree(&regex);
 	return 0;
 }
